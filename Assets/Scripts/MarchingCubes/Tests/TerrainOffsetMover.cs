@@ -1,13 +1,14 @@
 ﻿using System;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace MarchingCubes.Tests
 {
     [RequireComponent(typeof(TerrainTester))]
     public class TerrainOffsetMover:MonoBehaviour
     {
-        [SerializeField] private float3 _terrainOffset = float3.zero;
+        [SerializeField] private float3 _noiseOffset = float3.zero;
         
         private TerrainTester _terrainTester;
 
@@ -20,24 +21,24 @@ namespace MarchingCubes.Tests
         {
             if (Input.GetKey(KeyCode.A))
             {
-                _terrainOffset.x += Time.deltaTime;
+                _noiseOffset.x += Time.deltaTime;
             }
 
             if (Input.GetKey(KeyCode.D))
             {
-                _terrainOffset.x -= Time.deltaTime;
+                _noiseOffset.x -= Time.deltaTime;
             }
 
             if (Input.GetKey(KeyCode.W))
             {
-                _terrainOffset.z += Time.deltaTime;
+                _noiseOffset.z += Time.deltaTime;
             }
 
             if (Input.GetKey(KeyCode.S))
             {
-                _terrainOffset.z -= Time.deltaTime;
+                _noiseOffset.z -= Time.deltaTime;
             }
-            _terrainTester.Terrain.UpdateOffset(_terrainOffset);
+            _terrainTester.Terrain.UpdateOffset(_noiseOffset);
         }
         
     }

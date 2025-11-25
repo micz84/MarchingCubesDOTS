@@ -16,8 +16,9 @@ namespace MarchingCubes.Tests
         [SerializeField] private int3 _maxChunkSize = new(4, 4, 4);
         [SerializeField] [Range(1,20)] private byte _cubesPerUnit = 1;
         [SerializeField] private MeshFilter _prefab;
-        [SerializeField] private float _terrainScale = 1f;
+        [SerializeField] private float _noiseScale = 1f;
         
+        private int3 _chunkCounts;
         private NativeArray<TerrainChunk> _terrainChunks;
         private readonly List<Mesh> _meshes = new();
         //Temp arrays
@@ -28,14 +29,13 @@ namespace MarchingCubes.Tests
         
         public SimpleSmoothTerrain Terrain { get; private set; }
         public List<MeshFilter> MeshFilters { get; } = new();
-        public int3 ChunkCounts { get; private set; }
         public event System.Action GenerationStarted;
         public event System.Action GenerationFinished;
 
         public void Awake()
         {
-            Terrain = new SimpleSmoothTerrain(_terrainScale);
-            ChunkCounts = new int3((int)math.ceil((float)_terrainSize.x / _maxChunkSize.x),
+            Terrain = new SimpleSmoothTerrain(_noiseScale);
+            _chunkCounts = new int3((int)math.ceil((float)_terrainSize.x / _maxChunkSize.x),
                 (int)math.ceil((float)_terrainSize.y / _maxChunkSize.y),
                 (int)math.ceil((float)_terrainSize.z / _maxChunkSize.z));
             
@@ -44,21 +44,21 @@ namespace MarchingCubes.Tests
                 new VertexAttributeDescriptor(VertexAttribute.Position, stream: 0),
                 new VertexAttributeDescriptor(VertexAttribute.Normal, stream: 1)
             }, Allocator.Persistent);
-            _terrainChunks = new NativeArray<TerrainChunk>(ChunkCounts.x * ChunkCounts.y * ChunkCounts.z,
+            _terrainChunks = new NativeArray<TerrainChunk>(_chunkCounts.x * _chunkCounts.y * _chunkCounts.z,
                 Allocator.Persistent);
             _meshDatas = new NativeArray<MeshData>(_terrainChunks.Length, Allocator.Persistent);
             _jobHandles = new NativeList<JobHandle>(Allocator.Persistent);
             _helperArrays = new HelperArrays(_cubesPerUnit);
             
-            var verticalStride = ChunkCounts.x * ChunkCounts.z;
-            CreateMeshFilters(ChunkCounts, verticalStride);
-            GenerateTerrain(ChunkCounts, verticalStride);
+            var verticalStride = _chunkCounts.x * _chunkCounts.z;
+            CreateMeshFilters(_chunkCounts, verticalStride);
+            GenerateTerrain(_chunkCounts, verticalStride);
             
         }
 
         private void Update()
         {
-            Terrain.UpdateScale(_terrainScale);
+            Terrain.UpdateScale(_noiseScale);
             var chunksDimensions = new int3((int)math.ceil((float)_terrainSize.x / _maxChunkSize.x),
                 (int)math.ceil((float)_terrainSize.y / _maxChunkSize.y),
                 (int)math.ceil((float)_terrainSize.z / _maxChunkSize.z));

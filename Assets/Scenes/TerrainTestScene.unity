@@ -151,16 +151,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _terrainSize:
-    x: 512
-    y: 24
-    z: 512
-  _maxChunkSize:
     x: 128
-    y: 8
+    y: 24
     z: 128
-  _cubesPerUnit: 1
+  _maxChunkSize:
+    x: 32
+    y: 8
+    z: 32
+  _cubesPerUnit: 2
   _prefab: {fileID: 2646341166159647547, guid: 1d6b9da2b785d964ba093d1d86d77aa9, type: 3}
-  _terrainScale: 20
+  _noiseScale: 10
 --- !u!4 &57699895
 Transform:
   m_ObjectHideFlags: 0
@@ -201,7 +201,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 154930fc7c784b9bb700b1d8cf1614b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Terrain::MarchingCubes.Tests.TerrainOffsetMover
-  _terrainOffset:
+  _noiseOffset:
     x: 0
     y: 0
     z: 0
