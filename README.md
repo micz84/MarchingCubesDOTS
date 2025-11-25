@@ -17,9 +17,11 @@ My machine specs:
 - RAM: 64 GB DDR5 6400 MHz
 Performance:
 
-Terrain Size 512x24x512, 
-Max Chunk Size 128x8x128, 
-Cubes Per Unit: 1.
+### Test 1 
+
+**Terrain Size:** 512x24x512, 
+**Max Chunk Size:** 128x8x128, 
+**Cubes Per Unit:** 1.
 
 Total meshes: 48 
 Total vertices: 13 813 437.00 
@@ -27,19 +29,21 @@ Average Vertices per chunk: 287 779.00
 Time: 99.61120 ms 
 Average time: 2.07523
 
-Terrain Size 256x24x256,
-Max Chunk Size 64x8x64,
-Cubes Per Unit: 3. 
+### Test 2 
+
+**Terrain Size** 256x24x256,
+**Max Chunk Size:** 64x8x64,
+**Cubes Per Unit:** 3. 
 
 Total meshes: 48 
 Total vertices: 31 228 776.00 
 Average Vertices per chunk: 650 599.00 
 Time: 337.50310 ms 
 Average time: 7.03131
-
-Terrain Size 128x24x128,
-Max Chunk Size 32x8x32,
-Cubes Per Unit: 2. 
+### Test 3 
+**Terrain Size** 128x24x128,
+**Max Chunk Size:** 32x8x32,
+**Cubes Per Unit:**: 2. 
 
 Total meshes: 48 
 Total vertices: 3 475 407.00
