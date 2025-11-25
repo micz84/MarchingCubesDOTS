@@ -14,7 +14,7 @@ namespace MarchingCubes.Tests
     {
         [SerializeField] private int3 _terrainSize = new(8, 8, 8);
         [SerializeField] private int3 _maxChunkSize = new(4, 4, 4);
-        [SerializeField] private byte _cubesPerUnit = 1;
+        [SerializeField] [Range(1,20)] private byte _cubesPerUnit = 1;
         [SerializeField] private MeshFilter _prefab;
         [SerializeField] private float _terrainScale = 1f;
         
