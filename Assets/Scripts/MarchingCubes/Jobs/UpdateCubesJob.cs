@@ -70,7 +70,7 @@ namespace MarchingCubes.Jobs
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CalculateLayerFactors(float offset, int verticesCountX, int verticesCountY, int z,
-            NativeArray<float> leftLayerFactors)
+            NativeArray<float> layerFactors)
         {
             var startOffset = -offset / 2;
             for (var y = 0; y < verticesCountY; y++)
@@ -82,7 +82,7 @@ namespace MarchingCubes.Jobs
                                                       y * offset + startOffset,
                                                       z * offset + startOffset)
                                                   + ChunkWorldPosition;
-                    leftLayerFactors[index] = Terrain.GetFactorForPosition(calculateVertexPosition);
+                    layerFactors[index] = Terrain.GetFactorForPosition(calculateVertexPosition);
                 }
             }
         }
