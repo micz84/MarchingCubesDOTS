@@ -38,6 +38,7 @@ namespace MarchingCubes.Tests
             if(!_generateStats)
                 return;
             var totalVertices = 0;
+            var totalTriangles = 0;
             var filters = 0;
             var meshFilters = _terrainTester.MeshFilters;
             
@@ -47,6 +48,7 @@ namespace MarchingCubes.Tests
                 if (mesh != null && mesh.vertexCount != 0)
                 {
                     totalVertices += mesh.vertexCount;
+                    totalTriangles += mesh.triangles.Length/3;
                     filters++;
                 }
             }
@@ -56,7 +58,7 @@ namespace MarchingCubes.Tests
                 var nfi = new NumberFormatInfo();
                 nfi.NumberGroupSeparator = " ";
                 Debug.Log(
-                    $"Total meshes: {filters} Total vertices: {totalVertices.ToString("N2",nfi)} Average Vertices per chunk: {(totalVertices / filters).ToString("N2",nfi)} Time: {_stopwatch.Elapsed.TotalMilliseconds:F5} ms Average time: {_stopwatch.Elapsed.TotalMilliseconds / filters:F5}");
+                    $"Total meshes: {filters} Total vertices: {totalVertices.ToString("N0",nfi)} Total Triangles: {totalTriangles.ToString("N0",nfi)} Average Vertices per chunk: {(totalVertices / filters).ToString("N0",nfi)} Average Triangles per chunk: {(totalTriangles / filters).ToString("N0",nfi)} Time: {_stopwatch.Elapsed.TotalMilliseconds:F5} ms Average time: {_stopwatch.Elapsed.TotalMilliseconds / filters:F5}");
             }
             
         }
