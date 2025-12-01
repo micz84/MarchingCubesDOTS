@@ -19,44 +19,44 @@ Performance:
 
 ### Test 1 
 
-**Terrain Size:** 256x24x256, 
-**Max Chunk Size:** 64x8x64, 
-**Cubes Per Unit:** 2.
+**Terrain Size:** 256x24x256  
+**Max Chunk Size:** 64x8x64  
+**Cubes Per Unit:** 2  
 
-Total meshes: 48 
-Total vertices: 13 875 534 
-Total Triangles: 4 625 178 
-Average Vertices per chunk: 289 073 
-Average Triangles per chunk: 96 357 
-Time: 128.30750 ms 
-Average time: 2.67307
+Total meshes: 48  
+Total vertices: 13 875 534  
+Total Triangles: 4 625 178  
+Average Vertices per chunk: 289 073  
+Average Triangles per chunk: 96 357  
+Time: 128.30750 ms  
+Average time: 2.67307  
 
 ### Test 2 
 
-**Terrain Size** 256x24x256,
-**Max Chunk Size:** 64x8x64,
-**Cubes Per Unit:** 3. 
+**Terrain Size** 256x24x256  
+**Max Chunk Size:** 64x8x64  
+**Cubes Per Unit:** 3  
 
-Total meshes: 48 
-Total vertices: 31 228 776 
-Total Triangles: 10 409 592 
-Average Vertices per chunk: 650 599 
-Average Triangles per chunk: 216 866 
-Time: 338.58020 ms 
-Average time: 7.05375
+Total meshes: 48  
+Total vertices: 31 228 776  
+Total Triangles: 10 409 592  
+Average Vertices per chunk: 650 599  
+Average Triangles per chunk: 216 866  
+Time: 338.58020 ms  
+Average time: 7.05375 
 
 ### Test 3 
-**Terrain Size** 128x24x128,
-**Max Chunk Size:** 32x8x32,
-**Cubes Per Unit:**: 2. 
+**Terrain Size** 128x24x128  
+**Max Chunk Size:** 32x8x32  
+**Cubes Per Unit:** 2  
 
-Total meshes: 48 
-Total vertices: 3 465 474 Total 
-Triangles: 1 155 158 
-Average Vertices per chunk: 72 197 
-Average Triangles per chunk: 24 065 
-Time: 23.37370 ms 
-Average time: 0.48695
+Total meshes: 48  
+Total vertices: 3 465 474 Total  
+Triangles: 1 155 158  
+Average Vertices per chunk: 72 197  
+Average Triangles per chunk: 24 065  
+Time: 23.37370 ms  
+Average time: 0.48695  
 
 It can maintain a steady 30 fps, generating almost 3.5 million vertices each frame inside the Unity editor in release mode.
 
