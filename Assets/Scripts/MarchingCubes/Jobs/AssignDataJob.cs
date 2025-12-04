@@ -41,7 +41,8 @@ namespace MarchingCubes.Jobs
             }
             for (var i = 0; i < meshData.IndexCount; i++)
             {
-                indicesData[i] = meshData.IndicesPointer[i];
+                // TODO: find reason for bad indices
+                indicesData[i] = math.clamp(meshData.IndicesPointer[i],0, meshData.VerticesCount);
             }
           
             writableMeshData.subMeshCount = 1;

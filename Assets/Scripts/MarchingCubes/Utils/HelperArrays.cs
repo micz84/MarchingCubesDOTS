@@ -11,12 +11,17 @@ namespace MarchingCubes.Utils
         public NativeArray<Triangle> TriangulationData => _triangulationData;
         public NativeArray<CubeTrianglesIndices> CubeTrianglesIndices => _cubeTrianglesIndices;
         public NativeArray<float3> VertexOffsets => _vertexOffsets;
+        public NativeArray<int> TrianglesPerCube => _trianglesPerCube;
+        public NativeArray<int2> EdgeVertexPairIndices => _edgeVertexPairIndices;
         public NativeArray<float3x2> EdgePoints => _edgesPoints;
+        
         private NativeArray<Triangle> _triangulationData;
         private NativeArray<CubeTrianglesIndices> _cubeTrianglesIndices;
+        private NativeArray<int> _trianglesPerCube;
         private NativeArray<float3> _vertexOffsets;
+        private NativeArray<int2> _edgeVertexPairIndices;
         private NativeArray<float3x2> _edgesPoints;
-        
+
         public HelperArrays(int cubesPerUnit)
         {
             CreateHelperArrays(1f / cubesPerUnit);
@@ -27,6 +32,8 @@ namespace MarchingCubes.Utils
             _triangulationData.Dispose();
             _cubeTrianglesIndices.Dispose();
             _vertexOffsets.Dispose();
+            _edgeVertexPairIndices.Dispose();
+            _trianglesPerCube.Dispose();
         }
         
         
@@ -51,20 +58,28 @@ namespace MarchingCubes.Utils
             _vertexOffsets[5] = new float3(cubeVertexStep, -cubeVertexStep, cubeVertexStep);
             _vertexOffsets[6] = new float3(cubeVertexStep, cubeVertexStep, cubeVertexStep);
             _vertexOffsets[7] = new float3(-cubeVertexStep, cubeVertexStep, cubeVertexStep);
+            _edgeVertexPairIndices = new NativeArray<int2>(12, Allocator.Persistent);
+            _edgeVertexPairIndices[0] = new int2(0, 1);
+            _edgeVertexPairIndices[1] = new int2(1, 2);
+            _edgeVertexPairIndices[2] = new int2(3, 2);
+            _edgeVertexPairIndices[3] = new int2(0, 3);
+            _edgeVertexPairIndices[4] = new int2(4, 5);
+            _edgeVertexPairIndices[5] = new int2(5, 6);
+            _edgeVertexPairIndices[6] = new int2(6, 7);
+            _edgeVertexPairIndices[7] = new int2(4, 7);
+            _edgeVertexPairIndices[8] = new int2(0, 4);
+            _edgeVertexPairIndices[9] = new int2(1, 5);
+            _edgeVertexPairIndices[10] = new int2(2, 6);
+            _edgeVertexPairIndices[11] = new int2(3, 7);
 
             _edgesPoints = new NativeArray<float3x2>(12, Allocator.Persistent);
-            _edgesPoints[0] = new(_vertexOffsets[0], _vertexOffsets[1]);
-            _edgesPoints[1] = new(_vertexOffsets[1], _vertexOffsets[2]);
-            _edgesPoints[2] = new(_vertexOffsets[3], _vertexOffsets[2]);
-            _edgesPoints[3] = new(_vertexOffsets[0], _vertexOffsets[3]);
-            _edgesPoints[4] = new(_vertexOffsets[4], _vertexOffsets[5]);
-            _edgesPoints[5] = new(_vertexOffsets[5], _vertexOffsets[6]);
-            _edgesPoints[6] = new(_vertexOffsets[6], _vertexOffsets[7]);
-            _edgesPoints[7] = new(_vertexOffsets[4], _vertexOffsets[7]);
-            _edgesPoints[8] = new(_vertexOffsets[0], _vertexOffsets[4]);
-            _edgesPoints[9] = new(_vertexOffsets[1], _vertexOffsets[5]);
-            _edgesPoints[10] = new(_vertexOffsets[2], _vertexOffsets[6]);
-            _edgesPoints[11] = new(_vertexOffsets[3], _vertexOffsets[7]);
+            for (var edgeIndex = 0; edgeIndex < 12; edgeIndex++)
+            {
+                var edgeVertexPairIndex = _edgeVertexPairIndices[edgeIndex];
+                _edgesPoints[edgeIndex] = new float3x2(_vertexOffsets[edgeVertexPairIndex.x],
+                    _vertexOffsets[edgeVertexPairIndex.y]);
+            }
+     
             _cubeTrianglesIndices = new NativeArray<CubeTrianglesIndices>(256, Allocator.Persistent);
             var triangulationInt = new Dictionary<byte, List<int>>();
             for (var i = 0; i < LookupTables.Triangulation.Length; i++)
@@ -82,6 +97,13 @@ namespace MarchingCubes.Utils
                 }
 
                 list.Add(edge);
+            }
+            _trianglesPerCube = new NativeArray<int>(256, Allocator.Persistent);
+            _trianglesPerCube[0] = 0;
+            _trianglesPerCube[255] = 0;
+            for (byte i = 1; i < _trianglesPerCube.Length - 1; i++)
+            {
+                _trianglesPerCube[i] = triangulationInt[i].Count/3;
             }
 
             var nativeList = new NativeList<Triangle>(Allocator.Temp);

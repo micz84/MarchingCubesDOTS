@@ -17,6 +17,7 @@ namespace MarchingCubes.Tests
         [SerializeField] [Range(1,20)] private byte _cubesPerUnit = 1;
         [SerializeField] private MeshFilter _prefab;
         [SerializeField] private float _noiseScale = 1f;
+        [SerializeField] private bool _generateInUpdate = true;
         
         private int3 _chunkCounts;
         private NativeArray<TerrainChunk> _terrainChunks;
@@ -26,15 +27,16 @@ namespace MarchingCubes.Tests
         private NativeArray<MeshData> _meshDatas;
         private HelperArrays _helperArrays;
         private NativeArray<VertexAttributeDescriptor> _vertexAttributes;
-        
+
         public SimpleSmoothTerrain Terrain { get; private set; }
         public List<MeshFilter> MeshFilters { get; } = new();
+        public List<MeshCollider> MeshColliders { get; } = new();
         public event System.Action GenerationStarted;
         public event System.Action GenerationFinished;
 
         public void Awake()
         {
-            Terrain = new SimpleSmoothTerrain(_noiseScale);
+            Terrain = new SimpleSmoothTerrain(_terrainSize, _noiseScale);
             _chunkCounts = new int3((int)math.ceil((float)_terrainSize.x / _maxChunkSize.x),
                 (int)math.ceil((float)_terrainSize.y / _maxChunkSize.y),
                 (int)math.ceil((float)_terrainSize.z / _maxChunkSize.z));
@@ -58,12 +60,15 @@ namespace MarchingCubes.Tests
 
         private void Update()
         {
-            Terrain.UpdateScale(_noiseScale);
-            var chunksDimensions = new int3((int)math.ceil((float)_terrainSize.x / _maxChunkSize.x),
-                (int)math.ceil((float)_terrainSize.y / _maxChunkSize.y),
-                (int)math.ceil((float)_terrainSize.z / _maxChunkSize.z));
-            var verticalStride = chunksDimensions.x * chunksDimensions.z;
-            GenerateTerrain(chunksDimensions, verticalStride);
+            if (_generateInUpdate)
+            {
+                Terrain.UpdateScale(_noiseScale);
+                var chunksDimensions = new int3((int)math.ceil((float)_terrainSize.x / _maxChunkSize.x),
+                    (int)math.ceil((float)_terrainSize.y / _maxChunkSize.y),
+                    (int)math.ceil((float)_terrainSize.z / _maxChunkSize.z));
+                var verticalStride = chunksDimensions.x * chunksDimensions.z;
+                GenerateTerrain(chunksDimensions, verticalStride);
+            }
         }
 
         private void OnDestroy()
@@ -113,6 +118,8 @@ namespace MarchingCubes.Tests
             for (var chunkIndex = 0; chunkIndex < count; chunkIndex++)
             {
                 MeshFilters[chunkIndex].sharedMesh.bounds = _meshDatas[chunkIndex].Bounds.Value;
+                MeshFilters[chunkIndex].sharedMesh.RecalculateNormals();
+                MeshColliders[chunkIndex].sharedMesh = _meshes[chunkIndex];
             }
 
             _meshes.Clear();
@@ -139,9 +146,8 @@ namespace MarchingCubes.Tests
                             math.min(_maxChunkSize.y, _terrainSize.y - y * _maxChunkSize.y),
                             math.min(_maxChunkSize.z, _terrainSize.z - z * _maxChunkSize.z));
 
-                        _terrainChunks[index] = new TerrainChunk(Terrain, chunkPosition, chunkSize, _cubesPerUnit);
-                        _meshDatas[index] = new(_helperArrays.TriangulationData, _helperArrays.CubeTrianglesIndices,
-                            _helperArrays.EdgePoints);
+                        _terrainChunks[index] = new TerrainChunk(Terrain, chunkPosition, chunkSize, _cubesPerUnit, _helperArrays.EdgePoints, _helperArrays.EdgeVertexPairIndices, _helperArrays.TrianglesPerCube);
+                        _meshDatas[index] = new(_helperArrays.TriangulationData, _helperArrays.CubeTrianglesIndices);
                         var meshFilter = Instantiate(_prefab);
                         meshFilter.transform.position = new Vector3(chunkPosition.x, chunkPosition.y, chunkPosition.z);
                         if (meshFilter.mesh == null)
@@ -150,6 +156,10 @@ namespace MarchingCubes.Tests
                         }
 
                         MeshFilters.Add(meshFilter);
+                        var meshCollider = meshFilter.gameObject.GetComponent<MeshCollider>();
+                        meshCollider.sharedMesh = meshFilter.mesh;
+                        meshCollider.convex = false;
+                        MeshColliders.Add(meshCollider);
                     }
                 }
             }
