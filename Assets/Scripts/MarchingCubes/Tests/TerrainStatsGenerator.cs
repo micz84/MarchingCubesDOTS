@@ -60,10 +60,9 @@ namespace MarchingCubes.Tests
             if (filters > 0)
             {
                 var nfi = new NumberFormatInfo();
-                
                 nfi.NumberGroupSeparator = " ";
                 _stringBuilder.AppendLine(
-                    $"TerrainSize\n W:{_terrainTester.TerrainSize.x} H:{_terrainTester.TerrainSize.y} D:{_terrainTester.TerrainSize.z}");
+                    $"TerrainSize W:{_terrainTester.TerrainSize.x} H:{_terrainTester.TerrainSize.y} D:{_terrainTester.TerrainSize.z}");
                 _stringBuilder.AppendLine($"Total meshes: {filters}");
                 _stringBuilder.AppendLine($"Total vertices: {totalVertices.ToString("N0", nfi)}");
                 _stringBuilder.AppendLine($"Total Triangles: {totalTriangles.ToString("N0", nfi)}");

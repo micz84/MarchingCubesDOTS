@@ -42,7 +42,6 @@ namespace MarchingCubes.Tests
         public void RegenerateTerrain(bool withCollider)
         {
             var verticalStride = _chunkCounts.x * _chunkCounts.z;
-            CreateMeshFilters(_chunkCounts, verticalStride);
             GenerateTerrain(_chunkCounts, verticalStride, withCollider);
             
         }
@@ -64,7 +63,8 @@ namespace MarchingCubes.Tests
             _meshDatas = new NativeArray<MeshData>(_terrainChunks.Length, Allocator.Persistent);
             _jobHandles = new NativeList<JobHandle>(Allocator.Persistent);
             _helperArrays = new HelperArrays(_cubesPerUnit);
-           
+            var verticalStride = _chunkCounts.x * _chunkCounts.z;
+            CreateMeshFilters(_chunkCounts, verticalStride);
         }
 
         private void Start()
@@ -74,7 +74,7 @@ namespace MarchingCubes.Tests
                 RegenerateTerrain(false);
             }
         }
-
+        
         private void Update()
         {
             if (_generateInUpdate)
@@ -92,7 +92,7 @@ namespace MarchingCubes.Tests
         {
             Terrain.Dispose();
             if (_jobHandles.IsCreated)
-                _jobHandles.Clear();
+                _jobHandles.Dispose();
             _helperArrays.Dispose();
             _vertexAttributes.Dispose();
             if (_terrainChunks.IsCreated)
@@ -102,7 +102,6 @@ namespace MarchingCubes.Tests
                     ref var chunk = ref _terrainChunks.GetRef(i);
                     chunk.Dispose();
                 }
-
                 _terrainChunks.Dispose();
             }
 
@@ -206,6 +205,7 @@ namespace MarchingCubes.Tests
                 }
             }
             JobHandle.CompleteAll(_jobHandles.AsArray());
+            _jobHandles.Clear();
             UpdateMeshes(withCollider);
             GenerationFinished?.Invoke();
         }

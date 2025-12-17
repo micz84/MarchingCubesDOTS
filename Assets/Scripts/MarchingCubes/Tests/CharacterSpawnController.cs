@@ -30,7 +30,7 @@ namespace MarchingCubes.Tests
             _freeLockCamera.Priority = 0;
             _thirdPersonCamera.Priority = 1;
             var terrainSize = _terrainTester.TerrainSize;
-            _character.transform.position = new Vector3((float)terrainSize.x / 2, terrainSize.y + 2, (float)terrainSize.z / 2);
+            _character.transform.position = new Vector3((float)terrainSize.x / 2, terrainSize.y + 4, (float)terrainSize.z / 2);
             _UI.SetActive(false);
         }
 

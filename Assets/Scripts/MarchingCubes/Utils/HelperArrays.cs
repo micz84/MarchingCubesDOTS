@@ -34,6 +34,7 @@ namespace MarchingCubes.Utils
             _vertexOffsets.Dispose();
             _edgeVertexPairIndices.Dispose();
             _trianglesPerCube.Dispose();
+            _edgesPoints.Dispose();
         }
         
         

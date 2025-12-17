@@ -38,13 +38,25 @@ namespace MarchingCubes.Tests
 
                 if (Input.GetKey(KeyCode.W))
                 {
-                    offset.z += Time.deltaTime;
+                    offset.z -= Time.deltaTime;
                     offsetMoved = true;
                 }
 
                 if (Input.GetKey(KeyCode.S))
                 {
-                    offset.z -= Time.deltaTime;
+                    offset.z += Time.deltaTime;
+                    offsetMoved = true;
+                }
+                
+                if (Input.GetKey(KeyCode.E))
+                {
+                    offset.y -= Time.deltaTime;
+                    offsetMoved = true;
+                }
+
+                if (Input.GetKey(KeyCode.Q))
+                {
+                    offset.y += Time.deltaTime;
                     offsetMoved = true;
                 }
 

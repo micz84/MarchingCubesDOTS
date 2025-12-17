@@ -78,6 +78,9 @@ namespace MarchingCubes.DataStructures
                 Indices.Dispose();
             if(Bounds.IsCreated)
                 Bounds.Dispose();
+            
+            if(_triangleDatas.IsCreated)
+                _triangleDatas.Dispose();
         }
     }
 }

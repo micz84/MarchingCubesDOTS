@@ -465,7 +465,7 @@ MonoBehaviour:
     x: 20
     y: 20
     z: 20
-  _cubeSize: 0.5
+  _cubeSize: 0
   _noiseProvider: {fileID: 1394120119}
   _surface: 0.5
   _surfaceMarkersVisible: 1
