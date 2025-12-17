@@ -8,8 +8,9 @@ namespace MarchingCubes.Tests
     [RequireComponent(typeof(TerrainTester))]
     public class TerrainOffsetMover:MonoBehaviour
     {
-        [SerializeField] private float3 _noiseOffset = float3.zero;
-        
+        [SerializeField] private CharacterSpawnController _characterSpawnController;
+        [SerializeField] private NoiseProvider _noiseProvider;
+        private bool _characterSpawned = false;
         private TerrainTester _terrainTester;
 
         private void Awake()
@@ -19,26 +20,47 @@ namespace MarchingCubes.Tests
 
         private void Update()
         {
-            if (Input.GetKey(KeyCode.A))
+            if (!_characterSpawned)
             {
-                _noiseOffset.x += Time.deltaTime;
+                bool offsetMoved = false;
+                var offset = float3.zero;
+                if (Input.GetKey(KeyCode.A))
+                {
+                    offset.x += Time.deltaTime;
+                    offsetMoved = true;
+                }
+
+                if (Input.GetKey(KeyCode.D))
+                {
+                    offset.x -= Time.deltaTime;
+                    offsetMoved = true;
+                }
+
+                if (Input.GetKey(KeyCode.W))
+                {
+                    offset.z += Time.deltaTime;
+                    offsetMoved = true;
+                }
+
+                if (Input.GetKey(KeyCode.S))
+                {
+                    offset.z -= Time.deltaTime;
+                    offsetMoved = true;
+                }
+
+                if (offsetMoved)
+                {
+                    _terrainTester.Terrain.MoveOffset(offset);
+                    _terrainTester.RegenerateTerrain(false);
+                }
             }
 
-            if (Input.GetKey(KeyCode.D))
+            if (Input.GetKey(KeyCode.Return))
             {
-                _noiseOffset.x -= Time.deltaTime;
+                _characterSpawned = true;
+                _terrainTester.RegenerateTerrain(true);
+                _characterSpawnController.EnableCharacter();
             }
-
-            if (Input.GetKey(KeyCode.W))
-            {
-                _noiseOffset.z += Time.deltaTime;
-            }
-
-            if (Input.GetKey(KeyCode.S))
-            {
-                _noiseOffset.z -= Time.deltaTime;
-            }
-            _terrainTester.Terrain.UpdateOffset(_noiseOffset);
         }
         
     }

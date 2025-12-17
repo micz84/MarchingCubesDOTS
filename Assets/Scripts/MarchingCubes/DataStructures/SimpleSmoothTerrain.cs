@@ -21,9 +21,9 @@ namespace MarchingCubes.DataStructures
             _scale.Value = scale;
         }
         
-        public void UpdateOffset(float3 offset)
+        public void MoveOffset(float3 offset)
         {
-            _offset.Value = offset;
+            _offset.Value += offset;
         }
 
         public void Dispose()
@@ -41,8 +41,6 @@ namespace MarchingCubes.DataStructures
                 || position.z <= 1 
                 || position.z >= _terrainSize.z - 1)
                 return -1;
-            return noise.snoise(position/_scale.Value + _offset.Value);
-            
             return noise.snoise(position/_scale.Value + _offset.Value);
         }
     }

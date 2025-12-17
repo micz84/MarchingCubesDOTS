@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using MarchingCubes.DataStructures;
 using MarchingCubes.Jobs;
 using MarchingCubes.Utils;
@@ -12,6 +13,7 @@ namespace MarchingCubes.Tests
 {
     internal class TerrainTester : MonoBehaviour
     {
+        [SerializeField] private bool _generateOnStart = false;
         [SerializeField] private int3 _terrainSize = new(8, 8, 8);
         [SerializeField] private int3 _maxChunkSize = new(4, 4, 4);
         [SerializeField] [Range(1,20)] private byte _cubesPerUnit = 1;
@@ -28,13 +30,24 @@ namespace MarchingCubes.Tests
         private HelperArrays _helperArrays;
         private NativeArray<VertexAttributeDescriptor> _vertexAttributes;
 
+        public int3 TerrainSize => _terrainSize;
         public SimpleSmoothTerrain Terrain { get; private set; }
         public List<MeshFilter> MeshFilters { get; } = new();
         public List<MeshCollider> MeshColliders { get; } = new();
         public event System.Action GenerationStarted;
         public event System.Action GenerationFinished;
 
-        public void Awake()
+        
+        
+        public void RegenerateTerrain(bool withCollider)
+        {
+            var verticalStride = _chunkCounts.x * _chunkCounts.z;
+            CreateMeshFilters(_chunkCounts, verticalStride);
+            GenerateTerrain(_chunkCounts, verticalStride, withCollider);
+            
+        }
+
+        private void Awake()
         {
             Terrain = new SimpleSmoothTerrain(_terrainSize, _noiseScale);
             _chunkCounts = new int3((int)math.ceil((float)_terrainSize.x / _maxChunkSize.x),
@@ -51,11 +64,15 @@ namespace MarchingCubes.Tests
             _meshDatas = new NativeArray<MeshData>(_terrainChunks.Length, Allocator.Persistent);
             _jobHandles = new NativeList<JobHandle>(Allocator.Persistent);
             _helperArrays = new HelperArrays(_cubesPerUnit);
-            
-            var verticalStride = _chunkCounts.x * _chunkCounts.z;
-            CreateMeshFilters(_chunkCounts, verticalStride);
-            GenerateTerrain(_chunkCounts, verticalStride);
-            
+           
+        }
+
+        private void Start()
+        {
+            if (_generateOnStart)
+            {
+                RegenerateTerrain(false);
+            }
         }
 
         private void Update()
@@ -67,7 +84,7 @@ namespace MarchingCubes.Tests
                     (int)math.ceil((float)_terrainSize.y / _maxChunkSize.y),
                     (int)math.ceil((float)_terrainSize.z / _maxChunkSize.z));
                 var verticalStride = chunksDimensions.x * chunksDimensions.z;
-                GenerateTerrain(chunksDimensions, verticalStride);
+                GenerateTerrain(chunksDimensions, verticalStride, true);
             }
         }
 
@@ -95,7 +112,7 @@ namespace MarchingCubes.Tests
             }
         }
 
-        private void UpdateMeshes()
+        private void UpdateMeshes(bool withCollider)
         {
             var count = _terrainChunks.Length;
             var unsafeMeshData = new NativeArray<UnsafeMeshData>(count, Allocator.TempJob);
@@ -119,7 +136,9 @@ namespace MarchingCubes.Tests
             {
                 MeshFilters[chunkIndex].sharedMesh.bounds = _meshDatas[chunkIndex].Bounds.Value;
                 MeshFilters[chunkIndex].sharedMesh.RecalculateNormals();
-                MeshColliders[chunkIndex].sharedMesh = _meshes[chunkIndex];
+                MeshFilters[chunkIndex].sharedMesh.RecalculateBounds();
+                if(withCollider)
+                    MeshColliders[chunkIndex].sharedMesh = _meshes[chunkIndex];
             }
 
             _meshes.Clear();
@@ -165,7 +184,7 @@ namespace MarchingCubes.Tests
             }
         }
 
-        private void GenerateTerrain(int3 chunksDimensions, int verticalStride)
+        private void GenerateTerrain(int3 chunksDimensions, int verticalStride, bool withCollider)
         {
             GenerationStarted?.Invoke();
             for (var y = 0; y < chunksDimensions.y; y++)
@@ -187,7 +206,7 @@ namespace MarchingCubes.Tests
                 }
             }
             JobHandle.CompleteAll(_jobHandles.AsArray());
-            UpdateMeshes();
+            UpdateMeshes(withCollider);
             GenerationFinished?.Invoke();
         }
     }

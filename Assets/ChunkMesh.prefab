@@ -90,6 +90,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!114 &2121846844894931944
 MonoBehaviour:
@@ -100,7 +101,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 4000222996984842473}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 19d0d364de5c49acbdc662df384b41bc, type: 3}
+  m_Script: {fileID: 11500000, guid: 94d384db7cb95ee4298879a1431b6597, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!64 &-5888577124694337658
