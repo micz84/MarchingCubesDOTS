@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using MarchingCubes.DataStructures;
 using MarchingCubes.Jobs;
 using MarchingCubes.Utils;
@@ -12,11 +13,13 @@ namespace MarchingCubes.Tests
 {
     internal class TerrainTester : MonoBehaviour
     {
+        [SerializeField] private bool _generateOnStart = false;
         [SerializeField] private int3 _terrainSize = new(8, 8, 8);
         [SerializeField] private int3 _maxChunkSize = new(4, 4, 4);
         [SerializeField] [Range(1,20)] private byte _cubesPerUnit = 1;
         [SerializeField] private MeshFilter _prefab;
         [SerializeField] private float _noiseScale = 1f;
+        [SerializeField] private bool _generateInUpdate = true;
         
         private int3 _chunkCounts;
         private NativeArray<TerrainChunk> _terrainChunks;
@@ -26,15 +29,26 @@ namespace MarchingCubes.Tests
         private NativeArray<MeshData> _meshDatas;
         private HelperArrays _helperArrays;
         private NativeArray<VertexAttributeDescriptor> _vertexAttributes;
-        
+
+        public int3 TerrainSize => _terrainSize;
         public SimpleSmoothTerrain Terrain { get; private set; }
         public List<MeshFilter> MeshFilters { get; } = new();
+        public List<MeshCollider> MeshColliders { get; } = new();
         public event System.Action GenerationStarted;
         public event System.Action GenerationFinished;
 
-        public void Awake()
+        
+        
+        public void RegenerateTerrain(bool withCollider)
         {
-            Terrain = new SimpleSmoothTerrain(_noiseScale);
+            var verticalStride = _chunkCounts.x * _chunkCounts.z;
+            GenerateTerrain(_chunkCounts, verticalStride, withCollider);
+            
+        }
+
+        private void Awake()
+        {
+            Terrain = new SimpleSmoothTerrain(_terrainSize, _noiseScale);
             _chunkCounts = new int3((int)math.ceil((float)_terrainSize.x / _maxChunkSize.x),
                 (int)math.ceil((float)_terrainSize.y / _maxChunkSize.y),
                 (int)math.ceil((float)_terrainSize.z / _maxChunkSize.z));
@@ -49,28 +63,36 @@ namespace MarchingCubes.Tests
             _meshDatas = new NativeArray<MeshData>(_terrainChunks.Length, Allocator.Persistent);
             _jobHandles = new NativeList<JobHandle>(Allocator.Persistent);
             _helperArrays = new HelperArrays(_cubesPerUnit);
-            
             var verticalStride = _chunkCounts.x * _chunkCounts.z;
             CreateMeshFilters(_chunkCounts, verticalStride);
-            GenerateTerrain(_chunkCounts, verticalStride);
-            
         }
 
+        private void Start()
+        {
+            if (_generateOnStart)
+            {
+                RegenerateTerrain(false);
+            }
+        }
+        
         private void Update()
         {
-            Terrain.UpdateScale(_noiseScale);
-            var chunksDimensions = new int3((int)math.ceil((float)_terrainSize.x / _maxChunkSize.x),
-                (int)math.ceil((float)_terrainSize.y / _maxChunkSize.y),
-                (int)math.ceil((float)_terrainSize.z / _maxChunkSize.z));
-            var verticalStride = chunksDimensions.x * chunksDimensions.z;
-            GenerateTerrain(chunksDimensions, verticalStride);
+            if (_generateInUpdate)
+            {
+                Terrain.UpdateScale(_noiseScale);
+                var chunksDimensions = new int3((int)math.ceil((float)_terrainSize.x / _maxChunkSize.x),
+                    (int)math.ceil((float)_terrainSize.y / _maxChunkSize.y),
+                    (int)math.ceil((float)_terrainSize.z / _maxChunkSize.z));
+                var verticalStride = chunksDimensions.x * chunksDimensions.z;
+                GenerateTerrain(chunksDimensions, verticalStride, true);
+            }
         }
 
         private void OnDestroy()
         {
             Terrain.Dispose();
             if (_jobHandles.IsCreated)
-                _jobHandles.Clear();
+                _jobHandles.Dispose();
             _helperArrays.Dispose();
             _vertexAttributes.Dispose();
             if (_terrainChunks.IsCreated)
@@ -80,7 +102,6 @@ namespace MarchingCubes.Tests
                     ref var chunk = ref _terrainChunks.GetRef(i);
                     chunk.Dispose();
                 }
-
                 _terrainChunks.Dispose();
             }
 
@@ -90,7 +111,7 @@ namespace MarchingCubes.Tests
             }
         }
 
-        private void UpdateMeshes()
+        private void UpdateMeshes(bool withCollider)
         {
             var count = _terrainChunks.Length;
             var unsafeMeshData = new NativeArray<UnsafeMeshData>(count, Allocator.TempJob);
@@ -113,6 +134,10 @@ namespace MarchingCubes.Tests
             for (var chunkIndex = 0; chunkIndex < count; chunkIndex++)
             {
                 MeshFilters[chunkIndex].sharedMesh.bounds = _meshDatas[chunkIndex].Bounds.Value;
+                MeshFilters[chunkIndex].sharedMesh.RecalculateNormals();
+                MeshFilters[chunkIndex].sharedMesh.RecalculateBounds();
+                if(withCollider)
+                    MeshColliders[chunkIndex].sharedMesh = _meshes[chunkIndex];
             }
 
             _meshes.Clear();
@@ -139,9 +164,8 @@ namespace MarchingCubes.Tests
                             math.min(_maxChunkSize.y, _terrainSize.y - y * _maxChunkSize.y),
                             math.min(_maxChunkSize.z, _terrainSize.z - z * _maxChunkSize.z));
 
-                        _terrainChunks[index] = new TerrainChunk(Terrain, chunkPosition, chunkSize, _cubesPerUnit);
-                        _meshDatas[index] = new(_helperArrays.TriangulationData, _helperArrays.CubeTrianglesIndices,
-                            _helperArrays.EdgePoints);
+                        _terrainChunks[index] = new TerrainChunk(Terrain, chunkPosition, chunkSize, _cubesPerUnit, _helperArrays.EdgePoints, _helperArrays.EdgeVertexPairIndices, _helperArrays.TrianglesPerCube);
+                        _meshDatas[index] = new(_helperArrays.TriangulationData, _helperArrays.CubeTrianglesIndices);
                         var meshFilter = Instantiate(_prefab);
                         meshFilter.transform.position = new Vector3(chunkPosition.x, chunkPosition.y, chunkPosition.z);
                         if (meshFilter.mesh == null)
@@ -150,12 +174,16 @@ namespace MarchingCubes.Tests
                         }
 
                         MeshFilters.Add(meshFilter);
+                        var meshCollider = meshFilter.gameObject.GetComponent<MeshCollider>();
+                        meshCollider.sharedMesh = meshFilter.mesh;
+                        meshCollider.convex = false;
+                        MeshColliders.Add(meshCollider);
                     }
                 }
             }
         }
 
-        private void GenerateTerrain(int3 chunksDimensions, int verticalStride)
+        private void GenerateTerrain(int3 chunksDimensions, int verticalStride, bool withCollider)
         {
             GenerationStarted?.Invoke();
             for (var y = 0; y < chunksDimensions.y; y++)
@@ -177,7 +205,8 @@ namespace MarchingCubes.Tests
                 }
             }
             JobHandle.CompleteAll(_jobHandles.AsArray());
-            UpdateMeshes();
+            _jobHandles.Clear();
+            UpdateMeshes(withCollider);
             GenerationFinished?.Invoke();
         }
     }

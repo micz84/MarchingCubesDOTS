@@ -97,7 +97,7 @@ namespace MarchingCubes.Jobs
                     var cubeCode = CubeCodes[i].Code;
                     if(cubeCode == 0 || cubeCode == 255)
                         continue;
-                    var edgeFactors = CubeCodes[i].EdgeFactors;
+                    var edgeFactors = CubeCodes[i].EdgeVertexIndex;
                     var cubePosition = new float3(x * cubeWidth, posY, posZ);
                     var indices = CubeTrianglesIndices[cubeCode];
                     for (var triangleIndex = indices.StartIndex; triangleIndex < indices.EndIndex; triangleIndex++)
@@ -118,10 +118,10 @@ namespace MarchingCubes.Jobs
                 }
             }
         }
-        private float3 GetVertexPosition(byte index, EdgeFactors factors)
+        private float3 GetVertexPosition(byte index, EdgeVertexIndex vertexIndex)
         {
             var points = EdgePoints[index];
-            return math.lerp(points.c0, points.c1, factors[index]);
+            return math.lerp(points.c0, points.c1, vertexIndex[index]);
         }
     }
     
