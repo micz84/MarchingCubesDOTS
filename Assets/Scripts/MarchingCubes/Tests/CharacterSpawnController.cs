@@ -1,6 +1,4 @@
-﻿using System;
-using Unity.Cinemachine;
-using Unity.Mathematics;
+﻿using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
