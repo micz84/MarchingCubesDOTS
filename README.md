@@ -2,6 +2,10 @@
 
 This is my implementation of the marching cubes algorithm using Unity DOTS. My main goal was to create a fast mesh generation. It is using the Unity Job System. It is an initial version, and I plan to improve it in the future. Right now, it can only generate a mesh from a noise function. It does not have any vertex sharing. Triangles for each cube are independent of each other.
 
+## Requirements 
+For the project to run, you need: 
+- [Starter Assets](https://assetstore.unity.com/packages/essentials/starter-assets-thirdperson-urp-196526)
+  
 ## How to use it?
 
 Open TerrainTestScene. In the TerrainTester game object, there is a TerrainTester component. It allows changing the generation parameters. Terrain size defines how big the terrain will be. Max chunk size defines the dimensions of a single terrain chunk. It allows for splitting terrain into multiple meshes. Cubes per unity defines the amount of marching cubes generated per Unity unit. It allows to generate more detailed, smoother terrain.
